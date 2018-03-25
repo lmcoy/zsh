@@ -1,0 +1,153 @@
+#compdef hdfs
+
+_hdfs() {
+    local line
+
+
+    _arguments -s -C \
+        '1:first arg:(dfs)' \
+        '*::arg:->args'
+
+    case $line[1] in
+        dfs)
+            _dfs
+            ;;
+    esac
+}
+
+function _dfs {
+    local line
+    _arguments -s -C  \
+        ':first arg:((\
+        -appendToFile\:"Append single src, or multiple srcs from local file system to the destination file system." \
+        -cat\:"Copies source paths to stdout." \
+        -checksum\:"Returns the checksum information of a file." \
+        -chgrp\:"Change group association of files." \
+        -chmod\:"Change the permissions of files." \
+        -chown\:"Change the owner of files." \
+        -copyFromLocal\:"Similar to the fs -put command, except that the source is restricted to a local file reference." \
+        -copyToLocal\:"Similar to get command, except that the destination is restricted to a local file reference." \
+        -count\:"Count the number of directories, files and bytes under the paths that match the specified file pattern." \
+        -cp\:"Copy files from source to destination." \
+        -createSnapshot\:"" \
+        -deleteSnapshot\:"" \
+        -df\:"Displays free space." \
+        -du\:"Displays sizes of files and directories contained in the given directory or the length of a file in case its just a file." \
+        -expunge\:"Permanently delete files in checkpoints older than the retention threshold from trash directory, and create new checkpoint." \
+        -find\:"Finds all files that match the specified expression and applies selected actions to them." \
+        -get\:"Copy files to the local file system." \
+        -getfacl\:"Displays the Access Control Lists (ACLs) of files and directories." \
+        -getfattr\:"Displays the extended attribute names and values (if any) for a file or directory." \
+        -getmerge\:"Takes a source directory and a destination file as input and concatenates files in src into the destination local file." \
+        -help\:"Return usage output." \
+        -ls\:"list files" \
+        -mkdir\:"Takes path uri’s as argument and creates directories." \
+        -moveFromLocal\:"Similar to put command, except that the source localsrc is deleted after it’s copied." \
+        -moveToLocal\:"Displays a \"Not implemented yet\" message." \
+        -mv\:"Moves files from source to destination." \
+        -put\:"Copy single src, or multiple srcs from local file system to the destination file system." \
+        -rm\:"Delete files specified as args." \
+        -rmdir\:"Delete a directory." \
+        -setfacl\:"Sets Access Control Lists (ACLs) of files and directories." \
+        -setfattr\:"Sets an extended attribute name and value for a file or directory." \
+        -setrep\:"Changes the replication factor of a file." \
+        -stat\:"Print statistics about the file/directory at <path> in the specified format." \
+        -tail\:"Displays last kilobyte of the file to stdout." \
+        -test\:"test" \
+        -text\:"Takes a source file and outputs the file in text format. The allowed formats are zip and TextRecordInputStream." \
+        -touchz\:"Create a file of zero length." \
+        -truncate\:"Truncate all files that match the specified file pattern to the specified length." \
+        -usage\:"Return the help for an individual command." \
+        ))' \
+        '*::arg:->args'
+
+    case $line[1] in
+        "-appendToFile")
+            _arguments '1:localsrc arg:_files' ':next arg:_files_in_hdfs'
+            ;;
+        "-cat")
+            _files_in_hdfs
+            ;;
+        "-chgrp")
+            _arguments '::recursive arg:(-R)' ':group:' ':next arg:_files_in_hdfs'
+            ;;
+        "-chmod")
+            _arguments '::optional arg:(-R)' ':mode:' ':next arg:_files_in_hdfs'
+            ;;
+        "-find")
+            _arguments \
+                ':<path>:' \
+                ':primary:((\
+                -name\:"Evaluates as true if the basename of the file matches the pattern using standard file system globbing."\
+                -iname\:"If -iname is used then the match is case insensitive."))' \
+                ':pattern:' \
+                ':and:(-and -print -print0)'
+            ;;
+        "-ls")
+            _arguments \
+                '-C[Display the paths of files and directories only.]' \
+                '-d[Directories are listed as plain files.]' \
+                '-h[Format file sizes in a human-readable fashion.]' \
+                '-q[Print ? instead of non-printable characters.]' \
+                '-R[Recursively list subdirectories encountered.]' \
+                '-t[Sort output by modification time (most recent first).]' \
+                '-S[Sort output by file size.]' \
+                '-r[Reverse the sort order.]' \
+                '-u[Use access time rather than modification time for display and sorting.]' \
+                '*:<args>:'
+            ;;
+        "-mkdir")
+            _arguments \
+                '-p[creating parent directories along the path]' \
+                '*:<paths>:'
+            ;;
+        "-moveFromLocal")
+            _arguments ':next arg:_files' ':next arg:(hdfs://)'
+            ;;
+        "-put")
+            _arguments '-p[Preserves access and modification times, ownership and the permissions.]' \
+                '-f[Overwrites the destination if it already exists.]' \
+                '-l[Allow DataNode to lazily persist the file to disk, Forces a replication factor of 1.]' \
+                '-d[Skip creation of temporary file with the suffix ._COPYING_.]' \
+                - set1 \
+                '*:local files:_files' \
+                - set2 \
+                ':stdin:((-\:"Use stdin as input."))' \
+                ':destination:'
+            ;;
+        "-setfacl")
+            _arguments \
+                '-R[recursive]' \
+                - set1 \
+                '(-k -m -x)-b[Remove all but the base ACL entries]' \
+                '(-m -b -x)-k[Remove the default ACL.]' \
+                '(-k -b -x)-m[Modify ACL. New entries are added to the ACL, and existing entries are retained.]:<acl_spec>:'\
+                '(-k -b -m)-x[Remove specified ACL entries. Other ACL entries are retained.]:<acl_spec>:' \
+                ':<path>:' \
+                - set2 \
+                '--set[Set]' \
+                ':<acl_spec>:' \
+                ':<path>:'
+            ;;
+        "-test")
+            _arguments ':next arg:(( \
+                -e\:"if the path exists, return 0." \
+                -z\:"if the file is zero length, return 0." \
+                -d\:"if the path is a directory, return 0." \
+                -f\:"if the path is a file, return 0." \
+                -s\:"if the path is not empty, return 0." \
+                -r\:"if the path exists and read permission is granted, return 0." \
+                -w\:"if the path exists and write permission is granted, return 0." \
+                ))' ':next arg:_files_in_hdfs'
+            ;;
+        "-text")
+            _arguments ':<src>:'
+            ;;
+        "-touchz")
+            _arguments '*:<URI>:'
+    esac
+}
+
+function _files_in_hdfs {
+    _values "files" "hdfs://" /
+}
